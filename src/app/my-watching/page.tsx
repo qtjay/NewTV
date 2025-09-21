@@ -71,7 +71,7 @@ export default function MyWatchingPage() {
     }
   };
 
-  const loadPlayRecords = async () => {
+  const loadPlayRecords = async (skipUpdateCheck = false) => {
     try {
       setLoading(true);
 
@@ -85,6 +85,15 @@ export default function MyWatchingPage() {
         ...record,
         id: key // 使用存储的key作为id
       })).sort((a, b) => b.save_time - a.save_time);
+
+      // 如果是删除操作触发的重新加载，跳过更新检查
+      if (skipUpdateCheck) {
+        setPlayRecords(records);
+        setHistoryRecords(records);
+        setUpdatedRecords([]);
+        setLoading(false);
+        return;
+      }
 
       // 异步检查剧集更新，不阻塞页面渲染
       setPlayRecords(records);
@@ -350,17 +359,17 @@ export default function MyWatchingPage() {
                       // 按自然日计算登录天数
                       const firstDate = new Date(userStats.firstWatchDate);
                       const currentDate = new Date();
-                      
+
                       // 获取注册日期的年月日（忽略时分秒）
                       const firstDay = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
                       const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-                      
+
                       // 计算自然日差值并加1
                       const daysDiff = Math.floor((currentDay.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24));
                       return daysDiff + 1;
                     })() : 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">登录天数</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">注册天数</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
@@ -387,11 +396,11 @@ export default function MyWatchingPage() {
                     // 按自然日计算登录天数
                     const firstDate = new Date(userStats.firstWatchDate);
                     const currentDate = new Date();
-                    
+
                     // 获取注册日期的年月日（忽略时分秒）
                     const firstDay = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
                     const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-                    
+
                     // 计算自然日差值并加1
                     const daysDiff = Math.floor((currentDay.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24));
                     return daysDiff + 1;
@@ -439,7 +448,7 @@ export default function MyWatchingPage() {
                 <div className="sm:hidden">
                   <div className="grid grid-cols-2 gap-x-4 gap-y-8 pt-4 pb-6">
                     {updatedRecords.map((record, index) => (
-                      <div key={`updated-${index}`} className="relative w-full">
+                      <div key={`updated-${index}`} className="relative w-full group">
                         <div className="relative">
                           <VideoCard
                             title={record.title}
@@ -452,7 +461,7 @@ export default function MyWatchingPage() {
                             source_name={record.source_name}
                             source={record.source_name}
                             id={record.id}
-                            onDelete={loadPlayRecords}
+                            onDelete={() => loadPlayRecords(true)}
                           />
                           {/* 新集数提示光环效果 - 跟随VideoCard缩放 */}
                           {record.hasUpdate && (
@@ -473,7 +482,7 @@ export default function MyWatchingPage() {
                 <div className="hidden sm:block">
                   <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-6 gap-y-10 pt-6 pb-8">
                     {updatedRecords.map((record, index) => (
-                      <div key={`updated-${index}`} className="relative w-full">
+                      <div key={`updated-${index}`} className="relative w-full group">
                         <div className="relative">
                           <VideoCard
                             title={record.title}
@@ -486,7 +495,7 @@ export default function MyWatchingPage() {
                             source_name={record.source_name}
                             source={record.source_name}
                             id={record.id}
-                            onDelete={loadPlayRecords}
+                            onDelete={() => loadPlayRecords(true)}
                           />
                           {/* 新集数提示光环效果 - 跟随VideoCard缩放 */}
                           {record.hasUpdate && (
